@@ -3,108 +3,111 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Visualitzador AR de Models GLB</title>
+  <title>AR Android · GLB Viewer (GitHub Pages)</title>
 
-  <!-- model-viewer (versió actual, fixada) -->
+  <!-- model-viewer (CDN estable). Si algún día falla, cambia la versión aquí. -->
   <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/model-viewer/4.1.0/model-viewer.min.js"></script>
+
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    body { background-color:#f3f4f6; font-family: system-ui,-apple-system,sans-serif; }
-    model-viewer {
-      width: 100%;
-      height: 55vh;
-      background: #fff;
-      border-radius: 1rem;
+    body { background:#f3f4f6; font-family: system-ui,-apple-system,sans-serif; }
+    model-viewer{
+      width:100%;
+      height:55vh;
+      background:#fff;
+      border-radius:1rem;
       --poster-color: transparent;
     }
-    #ar-button {
-      background-color: #2563eb;
-      color: white;
-      border-radius: 9999px;
-      padding: 14px 28px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,.2);
-      z-index: 10;
+    #ar-button{
+      background:#2563eb;
+      color:#fff;
+      border-radius:9999px;
+      padding:14px 28px;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      position:absolute;
+      bottom:20px;
+      right:20px;
+      box-shadow:0 10px 15px -3px rgba(0,0,0,.2);
+      z-index:10;
     }
   </style>
 </head>
+
 <body class="flex items-center justify-center min-h-screen p-4">
   <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden">
     <div class="p-6 bg-blue-600 text-white">
-      <h1 class="text-2xl font-bold italic tracking-tight text-center">AR Experiència Web</h1>
-    </div>
-
-    <!-- AVÍS CRÍTIC DE SEGURETAT (HTTPS) -->
-    <div id="https-warning" class="hidden mx-6 mt-6 p-4 bg-red-100 border-l-4 border-red-600 text-red-800 rounded-r-xl shadow-sm">
-      <p class="font-bold flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-        Connexió no segura (HTTP)
-      </p>
-      <p class="text-sm mt-1">L'accés a la càmera està bloquejat. Per veure el fons real en AR, has d'obrir aquesta pàgina amb <strong>HTTPS</strong>. Ara mateix la càmera es veurà negra.</p>
+      <h1 class="text-2xl font-bold italic tracking-tight text-center">AR Experiència Web (Android)</h1>
+      <p class="text-center text-xs opacity-90 mt-1">Recomanat: carregar el model per URL HTTPS (GitHub Pages)</p>
     </div>
 
     <div class="p-6 space-y-6">
 
-      <!-- Opció URL (necessària per AR quan el model ve d'un fitxer local) -->
+      <!-- URL Loader (la via fiable per AR a Android) -->
       <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4">
-        <p class="text-sm font-semibold text-gray-700 mb-2">Model per URL HTTPS (recomanat per AR)</p>
+        <p class="text-sm font-semibold text-gray-700 mb-2">Model per URL HTTPS (AR OK)</p>
         <div class="flex gap-2">
-          <input id="url-input" class="flex-1 px-3 py-2 rounded-xl border border-gray-300 text-sm"
-                 placeholder="https://exemple.com/model.glb" />
-          <button id="load-url-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold">
+          <input id="url-input"
+                 class="flex-1 px-3 py-2 rounded-xl border border-gray-300 text-sm"
+                 placeholder="https://el-teu-usuari.github.io/el-teu-repo/models/model.glb" />
+          <button id="load-url-btn"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-extrabold">
             Carregar URL
           </button>
         </div>
-        <p class="text-xs text-gray-500 mt-2">
-          iOS: si tens USDZ, posa'l com a <span class="font-mono">ios-src</span> al codi (o fes una versió amb selector GLB+USDZ).
+        <p class="text-[11px] text-gray-500 mt-2">
+          ⚠️ Si uses un link de <span class="font-mono">github.com/.../blob/...</span> no funcionarà. Ha de ser el fitxer servit per Pages.
         </p>
       </div>
 
-      <!-- Zona de càrrega fitxer -->
+      <!-- Drop / file loader (serveix per veure 3D, però AR sovint NO amb fitxer local) -->
       <div id="drop-zone" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl p-8 bg-gray-50 hover:bg-gray-100 transition-all cursor-pointer">
-        <div id="upload-icon">
+        <div>
           <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-blue-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
           </svg>
         </div>
-        <p class="text-gray-700 font-medium text-center mb-6 text-sm">Carrega un .glb per veure'l (AR requereix URL HTTPS)</p>
+        <p class="text-gray-700 font-medium text-center mb-6 text-sm">
+          Carrega un .glb per veure'l (AR a Android: millor URL HTTPS)
+        </p>
 
         <input type="file" id="model-input" accept=".glb,model/gltf-binary" class="hidden">
 
         <div class="flex flex-col sm:flex-row gap-3 w-full justify-center">
-          <button id="select-file-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-md">
+          <button id="select-file-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-extrabold transition-all shadow-md">
             Seleccionar .glb
           </button>
-          <button id="load-sample-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-8 py-3 rounded-xl font-bold transition-all">
+          <button id="load-sample-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-8 py-3 rounded-xl font-extrabold transition-all">
             Ver exemple (URL)
           </button>
         </div>
+
+        <p class="text-[11px] text-gray-500 mt-4 text-center">
+          Tip Android: obre això a <b>Chrome</b> (no WhatsApp/Instagram) i amb <b>Google Play Services for AR</b> instal·lat.
+        </p>
       </div>
 
-      <!-- Visualitzador -->
+      <!-- Viewer -->
       <div id="viewer-container" class="relative hidden">
         <model-viewer
           id="model-view"
           camera-controls
           auto-rotate
           ar
-          ar-modes="scene-viewer webxr quick-look"
+          ar-modes="webxr scene-viewer"
           ar-scale="auto"
           ar-placement="floor"
-          shadow-intensity="1"
           environment-image="neutral"
           exposure="1"
-          crossorigin="anonymous"
+          shadow-intensity="1"
+          loading="eager"
+          reveal="auto"
           alt="Model 3D">
 
-          <!-- Botó AR custom -->
           <button slot="ar-button" id="ar-button">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -113,168 +116,231 @@
           </button>
         </model-viewer>
 
-        <!-- Progrés -->
+        <!-- Progress -->
         <div class="mt-3 bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
           <div id="progress-bar" class="h-2 w-0 bg-blue-600"></div>
         </div>
-        <p id="progress-text" class="text-xs text-gray-500 mt-1">0%</p>
+        <div class="flex justify-between text-[11px] text-gray-500 mt-1">
+          <span id="progress-text">0%</span>
+          <span id="source-text"></span>
+        </div>
 
         <div class="mt-4 flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-100">
           <div class="flex items-center gap-2 overflow-hidden">
             <div id="status-dot" class="w-3 h-3 bg-yellow-400 rounded-full"></div>
-            <p id="filename-display" class="text-sm font-semibold text-gray-600 truncate max-w-[180px]"></p>
+            <p id="filename-display" class="text-sm font-semibold text-gray-600 truncate max-w-[220px]"></p>
           </div>
-          <button id="reset-btn" class="text-red-500 text-xs font-bold uppercase">Canviar</button>
+          <button id="reset-btn" class="text-red-500 text-xs font-extrabold uppercase">Canviar</button>
         </div>
       </div>
 
-      <!-- Ajuda AR -->
+      <!-- Errors -->
+      <div id="load-error" class="hidden p-4 bg-red-50 rounded-xl border border-red-200 text-xs text-red-800"></div>
+
+      <!-- AR help -->
       <div id="ar-help" class="hidden p-4 bg-orange-50 rounded-xl border border-orange-200 text-xs text-orange-800">
-        <p class="font-bold mb-2 uppercase">⚠️ Problemes amb l'AR o la Càmera?</p>
+        <p class="font-extrabold mb-2 uppercase">⚠️ AR no disponible / falla</p>
         <ul class="list-disc ml-4 space-y-1">
-          <li><strong>Càmera negra / fons blanc:</strong> El navegador no té permisos de càmera o no estàs en HTTPS.</li>
-          <li><strong>Model no carrega en AR:</strong> Estàs usant un fitxer local. Puja el model a una URL (ex: GitHub) i fes servir l'opció "Carregar URL".</li>
-          <li>A iOS, necessites carregar el model per URL, l'opció de seleccionar fitxer local no funciona bé en AR.</li>
+          <li>Obre en <b>Chrome</b> (no navegador dins d’apps).</li>
+          <li>Instal·la/actualitza <b>Google Play Services for AR (ARCore)</b>.</li>
+          <li>Carrega el model per <b>URL HTTPS</b> (GitHub Pages). Amb fitxer local (blob) sovint no arrenca AR.</li>
+          <li>Si el GLB pesa molt (20MB), optimitza textures i malla.</li>
         </ul>
         <p id="ar-debug" class="mt-2 text-[11px] text-orange-700"></p>
       </div>
 
-      <!-- Errors de càrrega -->
-      <div id="load-error" class="hidden p-4 bg-red-50 rounded-xl border border-red-200 text-xs text-red-800"></div>
+      <!-- Console-like debug (opcional) -->
+      <div id="debug-box" class="hidden p-3 bg-gray-900 text-gray-100 rounded-xl text-[11px] font-mono whitespace-pre-wrap"></div>
 
     </div>
   </div>
 
   <script>
+    // ====== Elements
     const input = document.getElementById('model-input');
     const selectBtn = document.getElementById('select-file-btn');
     const sampleBtn = document.getElementById('load-sample-btn');
+    const dropZone = document.getElementById('drop-zone');
+
     const modelViewer = document.getElementById('model-view');
     const viewerContainer = document.getElementById('viewer-container');
-    const dropZone = document.getElementById('drop-zone');
+
     const filenameDisplay = document.getElementById('filename-display');
     const resetBtn = document.getElementById('reset-btn');
-    const arHelp = document.getElementById('ar-help');
-    const arDebug = document.getElementById('ar-debug');
-    const loadError = document.getElementById('load-error');
-
-    const progressBar = document.getElementById('progress-bar');
-    const progressText = document.getElementById('progress-text');
 
     const urlInput = document.getElementById('url-input');
     const loadUrlBtn = document.getElementById('load-url-btn');
 
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const sourceText = document.getElementById('source-text');
+
+    const statusDot = document.getElementById('status-dot');
+    const loadError = document.getElementById('load-error');
+    const arHelp = document.getElementById('ar-help');
+    const arDebug = document.getElementById('ar-debug');
+
+    const debugBox = document.getElementById('debug-box');
+
+    // ====== Config
     const SAMPLE_MODEL_URL = "https://modelviewer.dev/shared-assets/models/Astronaut.glb";
 
-    // Comprovació de seguretat (HTTPS)
-    if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      document.getElementById('https-warning').classList.remove('hidden');
+    // ====== Utils
+    function setDot(cls){
+      statusDot.classList.remove('bg-yellow-400','bg-green-500','bg-red-500');
+      statusDot.classList.add(cls);
     }
-
-    function setDot(colorClass) {
-      const dot = document.getElementById('status-dot');
-      dot.classList.remove('bg-yellow-400','bg-green-500','bg-red-500');
-      dot.classList.add(colorClass);
-    }
-
-    function showError(msg) {
-      loadError.textContent = msg;
-      loadError.classList.remove('hidden');
-    }
-
-    function clearError() {
-      loadError.classList.add('hidden');
-      loadError.textContent = '';
-    }
-
-    function resetProgress() {
+    function resetProgress(){
       progressBar.style.width = '0%';
       progressText.textContent = '0%';
     }
+    function showError(msg){
+      loadError.textContent = msg;
+      loadError.classList.remove('hidden');
+    }
+    function clearError(){
+      loadError.classList.add('hidden');
+      loadError.textContent = '';
+    }
+    function showARHelp(msg){
+      arHelp.classList.remove('hidden');
+      arDebug.textContent = msg || '';
+    }
+    function hideARHelp(){
+      arHelp.classList.add('hidden');
+      arDebug.textContent = '';
+    }
+    function logDebug(line){
+      // Activa si vols veure logs a pantalla
+      // debugBox.classList.remove('hidden');
+      // debugBox.textContent += (line + "\n");
+      console.log(line);
+    }
 
-    function showViewer(url, name, sourceType) {
+    function isHTTPS(){
+      return location.protocol === 'https:';
+    }
+
+    function seemsGithubBlob(url){
+      return /github\.com\/.+\/blob\/.+/i.test(url);
+    }
+
+    function isLikelyInAppBrowser(){
+      const ua = navigator.userAgent || '';
+      // Heurística: Instagram/FB/Line/WhatsApp webviews
+      return /Instagram|FBAN|FBAV|Line|WhatsApp|wv/i.test(ua);
+    }
+
+    function showViewer(url, name, sourceKind){
       clearError();
       resetProgress();
+      setDot('bg-yellow-400');
 
-      // Important: src per veure en 3D
       modelViewer.src = url;
 
       viewerContainer.classList.remove('hidden');
       dropZone.classList.add('hidden');
-      filenameDisplay.textContent = name;
-      setDot('bg-yellow-400');
 
-      // Si ve de fitxer local (blob), avisem: AR pot fallar
-      // perquè Scene Viewer/Quick Look necessiten URL HTTPS públic
-      if (sourceType === 'local-file') {
-        arHelp.classList.remove('hidden');
-        arDebug.textContent = 'Detectat: fitxer local (blob URL). Per AR fiable, carrega un URL HTTPS del GLB (i en iOS idealment també USDZ).';
+      filenameDisplay.textContent = name || 'model.glb';
+      sourceText.textContent = sourceKind === 'remote' ? 'URL (AR OK)' : 'Fitxer local (AR limitat)';
+
+      // Checks / guidance
+      if (!isHTTPS()){
+        showARHelp('Aquest lloc no està en HTTPS. WebXR necessita HTTPS (GitHub Pages ja ho és).');
+      } else if (isLikelyInAppBrowser()){
+        showARHelp('Sembla un navegador dins d’una app (Instagram/WhatsApp). Obre el link a Chrome per AR.');
+      } else if (sourceKind === 'local'){
+        showARHelp('Has carregat un fitxer local (blob). Per AR fiable a Android, carrega el GLB per URL HTTPS (GitHub Pages).');
       } else {
-        arHelp.classList.add('hidden');
-        arDebug.textContent = '';
+        hideARHelp();
       }
     }
 
+    // ====== UI events
     selectBtn.addEventListener('click', () => input.click());
 
     input.addEventListener('change', (e) => {
-      if (e.target.files && e.target.files.length > 0) {
+      if (e.target.files && e.target.files.length){
         const file = e.target.files[0];
-        const url = URL.createObjectURL(file);
-        showViewer(url, file.name, 'local-file');
+        const blobUrl = URL.createObjectURL(file);
+        showViewer(blobUrl, file.name, 'local');
       }
     });
 
     sampleBtn.addEventListener('click', () => {
-      showViewer(SAMPLE_MODEL_URL, "Exemple_Astronauta.glb", 'remote-url');
+      showViewer(SAMPLE_MODEL_URL, 'Exemple_Astronauta.glb', 'remote');
     });
 
     loadUrlBtn.addEventListener('click', () => {
       const url = (urlInput.value || '').trim();
-      if (!url || !/^https:\/\//i.test(url)) {
-        showError('Introdueix un URL HTTPS vàlid (ha de començar per https://).');
-        return;
+      if (!url) return showError('Introdueix un URL HTTPS del .glb.');
+
+      if (!/^https:\/\//i.test(url)) return showError('Ha de començar per https://');
+
+      if (seemsGithubBlob(url)){
+        return showError('Aquest és un link "blob" de GitHub. Usa el link de GitHub Pages o el fitxer servit directament per Pages.');
       }
-      showViewer(url, url.split('/').pop(), 'remote-url');
+
+      showViewer(url, url.split('/').pop(), 'remote');
     });
 
     resetBtn.addEventListener('click', () => location.reload());
 
-    // Progrés de càrrega
-    modelViewer.addEventListener('progress', (event) => {
-      const p = Math.round((event.detail.totalProgress || 0) * 100);
+    // ====== model-viewer events
+    modelViewer.addEventListener('progress', (e) => {
+      const p = Math.round((e.detail.totalProgress || 0) * 100);
       progressBar.style.width = p + '%';
       progressText.textContent = p + '%';
+      if (p >= 100) logDebug('Càrrega 100%');
     });
 
-    // Model carregat
     modelViewer.addEventListener('load', () => {
-      // No fiïs tot a canActivateAR immediat; ajuda només com a pista
-      const can = modelViewer.canActivateAR;
-      // Si no pot activar AR, mostrem ajuda (pot ser dispositiu no compatible o blob/local)
-      if (!can) {
-        arHelp.classList.remove('hidden');
-        arDebug.textContent = arDebug.textContent || 'El dispositiu/navegador no sembla suportar AR en aquest context. Prova HTTPS + Chrome (Android) / Safari (iOS) i model via URL públic.';
+      logDebug('Model carregat. canActivateAR=' + modelViewer.canActivateAR);
+
+      // Pista útil: si no pot activar AR, mostrà ajuda
+      if (!modelViewer.canActivateAR) {
+        let msg = 'El navegador/dispositiu no sembla tenir AR disponible aquí.';
+        if (isLikelyInAppBrowser()) msg = 'Obre en Chrome (no navegador dins d’apps) per AR.';
+        else if (!isHTTPS()) msg = 'Cal HTTPS per AR/WebXR.';
+        else msg += ' Revisa ARCore (Google Play Services for AR) i compatibilitat del dispositiu.';
+        showARHelp(msg);
       }
     });
 
-    // Errors carregant el GLB
-    modelViewer.addEventListener('error', (event) => {
+    modelViewer.addEventListener('error', () => {
       setDot('bg-red-500');
-      arHelp.classList.remove('hidden');
-      showError('Error carregant el model. Sovint és per fitxer massa gran, textures pesades o URL no accessible.');
+      showError('Error carregant el model. Causes típiques: URL incorrecta, model massa pesat, Git LFS, o fitxer no accessible.');
+      showARHelp('Si estàs a GitHub Pages: comprova que el .glb està dins del repo i es serveix des de Pages (no blob).');
+      logDebug('ERROR loading model-viewer src');
     });
 
-    // Estats AR
-    modelViewer.addEventListener('ar-status', (event) => {
-      const s = event.detail.status;
+    modelViewer.addEventListener('ar-status', (e) => {
+      const s = e.detail.status;
+      logDebug('AR status: ' + s);
+
       if (s === 'session-started') setDot('bg-green-500');
+      if (s === 'not-presenting') setDot('bg-yellow-400');
+
       if (s === 'failed') {
         setDot('bg-red-500');
-        arHelp.classList.remove('hidden');
-        arDebug.textContent = arDebug.textContent || 'AR ha fallat. Si el model és local/blob, puja’l a un URL HTTPS públic. En iOS, usa USDZ via ios-src.';
+        let msg = 'AR ha fallat. ';
+        if (isLikelyInAppBrowser()) msg += 'Obre en Chrome.';
+        else msg += 'Revisa ARCore (Google Play Services for AR) i que el model es carregui per URL HTTPS.';
+        showARHelp(msg);
       }
     });
+
+    // ====== Make drop-zone clickable
+    dropZone.addEventListener('click', () => input.click());
+
+    // ====== Startup hints (Android)
+    (function startupHints(){
+      if (!isHTTPS()){
+        showARHelp('Això no va en HTTPS. En GitHub Pages sí: obre la URL de Pages.');
+      } else if (isLikelyInAppBrowser()){
+        showARHelp('Estàs en un navegador dins d’una app. Obre el link a Chrome per AR.');
+      }
+    })();
   </script>
 </body>
 </html>
