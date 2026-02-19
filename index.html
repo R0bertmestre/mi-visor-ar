@@ -1,168 +1,280 @@
 <!DOCTYPE html>
 <html lang="ca">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualitzador AR de Models GLB</title>
-    <!-- Importamos el componente model-viewer (versión estable) -->
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            background-color: #f3f4f6;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-        model-viewer {
-            width: 100%;
-            height: 55vh;
-            background-color: #ffffff;
-            border-radius: 1rem;
-            --poster-color: transparent;
-        }
-        #ar-button {
-            background-color: #2563eb;
-            color: white;
-            border-radius: 9999px;
-            padding: 14px 28px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
-            z-index: 10;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visualitzador AR de Models GLB</title>
+
+  <!-- model-viewer (versió actual, fixada) -->
+  <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/model-viewer/4.1.0/model-viewer.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body { background-color:#f3f4f6; font-family: system-ui,-apple-system,sans-serif; }
+    model-viewer {
+      width: 100%;
+      height: 55vh;
+      background: #fff;
+      border-radius: 1rem;
+      --poster-color: transparent;
+    }
+    #ar-button {
+      background-color: #2563eb;
+      color: white;
+      border-radius: 9999px;
+      padding: 14px 28px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,.2);
+      z-index: 10;
+    }
+  </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
-
-    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden">
-        <div class="p-6 bg-blue-600 text-white">
-            <h1 class="text-2xl font-bold italic tracking-tight text-center">AR Experiència Web</h1>
-        </div>
-
-        <div class="p-6 space-y-6">
-            <!-- Zona de Carga (Mantenemos la lógica que te funciona) -->
-            <div id="drop-zone" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl p-8 bg-gray-50 hover:bg-gray-100 transition-all cursor-pointer">
-                <div id="upload-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-blue-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                </div>
-                <p class="text-gray-700 font-medium text-center mb-6 text-sm">Carga tu archivo .glb para verlo en AR</p>
-                
-                <input type="file" id="model-input" accept=".glb,model/gltf-binary" class="hidden">
-                
-                <div class="flex flex-col sm:flex-row gap-3 w-full justify-center">
-                    <button id="select-file-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-md">
-                        Seleccionar .glb
-                    </button>
-                    <button id="load-sample-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-8 py-3 rounded-xl font-bold transition-all">
-                        Ver ejemplo
-                    </button>
-                </div>
-            </div>
-
-            <!-- Visualitzador -->
-            <div id="viewer-container" class="relative hidden">
-                <model-viewer 
-                    id="model-view"
-                    camera-controls
-                    auto-rotate
-                    ar
-                    ar-modes="webxr scene-viewer quick-look"
-                    ar-scale="auto"
-                    ar-placement="floor"
-                    shadow-intensity="1"
-                    environment-image="neutral"
-                    exposure="1"
-                    alt="Modelo 3D">
-                    
-                    <button slot="ar-button" id="ar-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        </svg>
-                        PROBAR EN MI ESPACIO
-                    </button>
-                </model-viewer>
-
-                <div class="mt-4 flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                    <div class="flex items-center gap-2 overflow-hidden">
-                        <div id="status-dot" class="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                        <p id="filename-display" class="text-sm font-semibold text-gray-600 truncate max-w-[120px]"></p>
-                    </div>
-                    <button id="reset-btn" class="text-red-500 text-xs font-bold uppercase">Cambiar</button>
-                </div>
-            </div>
-
-            <!-- Panel de ayuda para AR (Solo visible si hay problemas) -->
-            <div id="ar-help" class="hidden p-4 bg-orange-50 rounded-xl border border-orange-200 text-xs text-orange-800">
-                <p class="font-bold mb-2 uppercase">⚠️ ¿No funciona el AR?</p>
-                <ul class="list-disc ml-4 space-y-1">
-                    <li>Asegúrate de estar en <strong>HTTPS</strong>. El AR no funciona en webs no seguras.</li>
-                    <li>Si usas <strong>Android</strong>, usa Google Chrome.</li>
-                    <li>Si usas <strong>iPhone</strong>, usa Safari.</li>
-                    <li>Evita abrir esto desde WhatsApp o Instagram; copia el link al navegador.</li>
-                </ul>
-            </div>
-        </div>
+  <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+    <div class="p-6 bg-blue-600 text-white">
+      <h1 class="text-2xl font-bold italic tracking-tight text-center">AR Experiència Web</h1>
     </div>
 
-    <script>
-        const input = document.getElementById('model-input');
-        const selectBtn = document.getElementById('select-file-btn');
-        const sampleBtn = document.getElementById('load-sample-btn');
-        const modelViewer = document.getElementById('model-view');
-        const viewerContainer = document.getElementById('viewer-container');
-        const dropZone = document.getElementById('drop-zone');
-        const filenameDisplay = document.getElementById('filename-display');
-        const resetBtn = document.getElementById('reset-btn');
-        const arHelp = document.getElementById('ar-help');
+    <!-- AVÍS CRÍTIC DE SEGURETAT (HTTPS) -->
+    <div id="https-warning" class="hidden mx-6 mt-6 p-4 bg-red-100 border-l-4 border-red-600 text-red-800 rounded-r-xl shadow-sm">
+      <p class="font-bold flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        Connexió no segura (HTTP)
+      </p>
+      <p class="text-sm mt-1">L'accés a la càmera està bloquejat. Per veure el fons real en AR, has d'obrir aquesta pàgina amb <strong>HTTPS</strong>. Ara mateix la càmera es veurà negra.</p>
+    </div>
 
-        const SAMPLE_MODEL_URL = "https://modelviewer.dev/shared-assets/models/Astronaut.glb";
+    <div class="p-6 space-y-6">
 
-        function showViewer(url, name) {
-            modelViewer.src = url;
-            viewerContainer.classList.remove('hidden');
-            dropZone.classList.add('hidden');
-            filenameDisplay.textContent = name;
-            
-            // Verificamos compatibilidad de AR al cargar un modelo
-            if (!modelViewer.canActivateAR) {
-                arHelp.classList.remove('hidden');
-            }
-        }
+      <!-- Opció URL (necessària per AR quan el model ve d'un fitxer local) -->
+      <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+        <p class="text-sm font-semibold text-gray-700 mb-2">Model per URL HTTPS (recomanat per AR)</p>
+        <div class="flex gap-2">
+          <input id="url-input" class="flex-1 px-3 py-2 rounded-xl border border-gray-300 text-sm"
+                 placeholder="https://exemple.com/model.glb" />
+          <button id="load-url-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold">
+            Carregar URL
+          </button>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+          iOS: si tens USDZ, posa'l com a <span class="font-mono">ios-src</span> al codi (o fes una versió amb selector GLB+USDZ).
+        </p>
+      </div>
 
-        selectBtn.addEventListener('click', () => input.click());
+      <!-- Zona de càrrega fitxer -->
+      <div id="drop-zone" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl p-8 bg-gray-50 hover:bg-gray-100 transition-all cursor-pointer">
+        <div id="upload-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-blue-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+        </div>
+        <p class="text-gray-700 font-medium text-center mb-6 text-sm">Carrega un .glb per veure'l (AR requereix URL HTTPS)</p>
 
-        input.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                const file = e.target.files[0];
-                const url = URL.createObjectURL(file);
-                showViewer(url, file.name);
-            }
-        });
+        <input type="file" id="model-input" accept=".glb,model/gltf-binary" class="hidden">
 
-        sampleBtn.addEventListener('click', () => {
-            showViewer(SAMPLE_MODEL_URL, "Ejemplo_Astronauta.glb");
-        });
+        <div class="flex flex-col sm:flex-row gap-3 w-full justify-center">
+          <button id="select-file-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-md">
+            Seleccionar .glb
+          </button>
+          <button id="load-sample-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-8 py-3 rounded-xl font-bold transition-all">
+            Ver exemple (URL)
+          </button>
+        </div>
+      </div>
 
-        resetBtn.addEventListener('click', () => {
-            location.reload(); 
-        });
+      <!-- Visualitzador -->
+      <div id="viewer-container" class="relative hidden">
+        <model-viewer
+          id="model-view"
+          camera-controls
+          auto-rotate
+          ar
+          ar-modes="scene-viewer webxr quick-look"
+          ar-scale="auto"
+          ar-placement="floor"
+          shadow-intensity="1"
+          environment-image="neutral"
+          exposure="1"
+          crossorigin="anonymous"
+          alt="Model 3D">
 
-        // Escuchar estados del AR para ayudar al usuario
-        modelViewer.addEventListener('ar-status', (event) => {
-            const dot = document.getElementById('status-dot');
-            if (event.detail.status === 'session-started') {
-                dot.classList.replace('bg-yellow-400', 'bg-green-500');
-            } else if (event.detail.status === 'failed') {
-                dot.classList.replace('bg-yellow-400', 'bg-red-500');
-                arHelp.classList.remove('hidden');
-            }
-        });
-    </script>
+          <!-- Botó AR custom -->
+          <button slot="ar-button" id="ar-button">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            </svg>
+            PROVAR EN EL MEU ESPAI
+          </button>
+        </model-viewer>
+
+        <!-- Progrés -->
+        <div class="mt-3 bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+          <div id="progress-bar" class="h-2 w-0 bg-blue-600"></div>
+        </div>
+        <p id="progress-text" class="text-xs text-gray-500 mt-1">0%</p>
+
+        <div class="mt-4 flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-100">
+          <div class="flex items-center gap-2 overflow-hidden">
+            <div id="status-dot" class="w-3 h-3 bg-yellow-400 rounded-full"></div>
+            <p id="filename-display" class="text-sm font-semibold text-gray-600 truncate max-w-[180px]"></p>
+          </div>
+          <button id="reset-btn" class="text-red-500 text-xs font-bold uppercase">Canviar</button>
+        </div>
+      </div>
+
+      <!-- Ajuda AR -->
+      <div id="ar-help" class="hidden p-4 bg-orange-50 rounded-xl border border-orange-200 text-xs text-orange-800">
+        <p class="font-bold mb-2 uppercase">⚠️ Problemes amb l'AR o la Càmera?</p>
+        <ul class="list-disc ml-4 space-y-1">
+          <li><strong>Càmera negra / fons blanc:</strong> El navegador no té permisos de càmera o no estàs en HTTPS.</li>
+          <li><strong>Model no carrega en AR:</strong> Estàs usant un fitxer local. Puja el model a una URL (ex: GitHub) i fes servir l'opció "Carregar URL".</li>
+          <li>A iOS, necessites carregar el model per URL, l'opció de seleccionar fitxer local no funciona bé en AR.</li>
+        </ul>
+        <p id="ar-debug" class="mt-2 text-[11px] text-orange-700"></p>
+      </div>
+
+      <!-- Errors de càrrega -->
+      <div id="load-error" class="hidden p-4 bg-red-50 rounded-xl border border-red-200 text-xs text-red-800"></div>
+
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('model-input');
+    const selectBtn = document.getElementById('select-file-btn');
+    const sampleBtn = document.getElementById('load-sample-btn');
+    const modelViewer = document.getElementById('model-view');
+    const viewerContainer = document.getElementById('viewer-container');
+    const dropZone = document.getElementById('drop-zone');
+    const filenameDisplay = document.getElementById('filename-display');
+    const resetBtn = document.getElementById('reset-btn');
+    const arHelp = document.getElementById('ar-help');
+    const arDebug = document.getElementById('ar-debug');
+    const loadError = document.getElementById('load-error');
+
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+
+    const urlInput = document.getElementById('url-input');
+    const loadUrlBtn = document.getElementById('load-url-btn');
+
+    const SAMPLE_MODEL_URL = "https://modelviewer.dev/shared-assets/models/Astronaut.glb";
+
+    // Comprovació de seguretat (HTTPS)
+    if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      document.getElementById('https-warning').classList.remove('hidden');
+    }
+
+    function setDot(colorClass) {
+      const dot = document.getElementById('status-dot');
+      dot.classList.remove('bg-yellow-400','bg-green-500','bg-red-500');
+      dot.classList.add(colorClass);
+    }
+
+    function showError(msg) {
+      loadError.textContent = msg;
+      loadError.classList.remove('hidden');
+    }
+
+    function clearError() {
+      loadError.classList.add('hidden');
+      loadError.textContent = '';
+    }
+
+    function resetProgress() {
+      progressBar.style.width = '0%';
+      progressText.textContent = '0%';
+    }
+
+    function showViewer(url, name, sourceType) {
+      clearError();
+      resetProgress();
+
+      // Important: src per veure en 3D
+      modelViewer.src = url;
+
+      viewerContainer.classList.remove('hidden');
+      dropZone.classList.add('hidden');
+      filenameDisplay.textContent = name;
+      setDot('bg-yellow-400');
+
+      // Si ve de fitxer local (blob), avisem: AR pot fallar
+      // perquè Scene Viewer/Quick Look necessiten URL HTTPS públic
+      if (sourceType === 'local-file') {
+        arHelp.classList.remove('hidden');
+        arDebug.textContent = 'Detectat: fitxer local (blob URL). Per AR fiable, carrega un URL HTTPS del GLB (i en iOS idealment també USDZ).';
+      } else {
+        arHelp.classList.add('hidden');
+        arDebug.textContent = '';
+      }
+    }
+
+    selectBtn.addEventListener('click', () => input.click());
+
+    input.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        const file = e.target.files[0];
+        const url = URL.createObjectURL(file);
+        showViewer(url, file.name, 'local-file');
+      }
+    });
+
+    sampleBtn.addEventListener('click', () => {
+      showViewer(SAMPLE_MODEL_URL, "Exemple_Astronauta.glb", 'remote-url');
+    });
+
+    loadUrlBtn.addEventListener('click', () => {
+      const url = (urlInput.value || '').trim();
+      if (!url || !/^https:\/\//i.test(url)) {
+        showError('Introdueix un URL HTTPS vàlid (ha de començar per https://).');
+        return;
+      }
+      showViewer(url, url.split('/').pop(), 'remote-url');
+    });
+
+    resetBtn.addEventListener('click', () => location.reload());
+
+    // Progrés de càrrega
+    modelViewer.addEventListener('progress', (event) => {
+      const p = Math.round((event.detail.totalProgress || 0) * 100);
+      progressBar.style.width = p + '%';
+      progressText.textContent = p + '%';
+    });
+
+    // Model carregat
+    modelViewer.addEventListener('load', () => {
+      // No fiïs tot a canActivateAR immediat; ajuda només com a pista
+      const can = modelViewer.canActivateAR;
+      // Si no pot activar AR, mostrem ajuda (pot ser dispositiu no compatible o blob/local)
+      if (!can) {
+        arHelp.classList.remove('hidden');
+        arDebug.textContent = arDebug.textContent || 'El dispositiu/navegador no sembla suportar AR en aquest context. Prova HTTPS + Chrome (Android) / Safari (iOS) i model via URL públic.';
+      }
+    });
+
+    // Errors carregant el GLB
+    modelViewer.addEventListener('error', (event) => {
+      setDot('bg-red-500');
+      arHelp.classList.remove('hidden');
+      showError('Error carregant el model. Sovint és per fitxer massa gran, textures pesades o URL no accessible.');
+    });
+
+    // Estats AR
+    modelViewer.addEventListener('ar-status', (event) => {
+      const s = event.detail.status;
+      if (s === 'session-started') setDot('bg-green-500');
+      if (s === 'failed') {
+        setDot('bg-red-500');
+        arHelp.classList.remove('hidden');
+        arDebug.textContent = arDebug.textContent || 'AR ha fallat. Si el model és local/blob, puja’l a un URL HTTPS públic. En iOS, usa USDZ via ios-src.';
+      }
+    });
+  </script>
 </body>
 </html>
